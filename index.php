@@ -1,94 +1,9 @@
-<?php
+ï»¿<?php
 session_start();
 set_time_limit(0);
 
 include 'config.php';
 include 'functions.php';
-
-if (isset($_GET['acao']) && $_GET['acao'] == 'apagar') {
-    $id = $_GET['id'];
-
-    mysql_query("DELETE FROM lc_movimento WHERE id='$id'");
-    echo mysql_error();
-
-    header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&ok=2");
-    exit();
-}
-
-if (isset($_POST['acao']) && $_POST['acao'] == 'editar_cat') {
-    $id = $_POST['id'];
-    $nome = $_POST['nome'];
-
-    mysql_query("UPDATE lc_cat SET nome='$nome' WHERE id='$id'");
-    echo mysql_error();
-
-    header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&cat_ok=3");
-    exit();
-}
-
-if (isset($_GET['acao']) && $_GET['acao'] == 'apagar_cat') {
-    $id = $_GET['id'];
-
-    $qr=mysql_query("SELECT c.id FROM lc_movimento m, lc_cat c WHERE c.id=m.cat && c.id=$id");
-    if (mysql_num_rows($qr)>0){
-        header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&cat_err=1");
-        exit();
-    }
-    
-    mysql_query("DELETE FROM lc_cat WHERE id='$id'");
-    echo mysql_error();
-
-    header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&cat_ok=2");
-    exit();
-}
-
-if (isset($_POST['acao']) && $_POST['acao'] == 'editar_mov') {
-    $id = $_POST['id'];
-    $dia = $_POST['dia'];
-    $tipo = $_POST['tipo'];
-    $cat = $_POST['cat'];
-    $descricao = $_POST['descricao'];
-    $valor = str_replace(",", ".", $_POST['valor']);
-
-    mysql_query("UPDATE lc_movimento SET dia='$dia', tipo='$tipo', cat='$cat', descricao='$descricao', valor='$valor' WHERE id='$id'");
-    echo mysql_error();
-
-    header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&ok=3");
-    exit();
-}
-
-if (isset($_POST['acao']) && $_POST['acao'] == 2) {
-
-    $nome = $_POST['nome'];
-
-    mysql_query("INSERT INTO lc_cat (nome) values ('$nome')");
-
-    echo mysql_error();
-
-    header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&cat_ok=1");
-    exit();
-}
-
-if (isset($_POST['acao']) && $_POST['acao'] == 1) {
-
-    $data = $_POST['data'];
-    $tipo = $_POST['tipo'];
-    $cat = $_POST['cat'];
-    $descricao = $_POST['descricao'];
-    $valor = str_replace(",", ".", $_POST['valor']);
-
-    $t = explode("/", $data);
-    $dia = $t[0];
-    $mes = $t[1];
-    $ano = $t[2];
-
-    mysql_query("INSERT INTO lc_movimento (dia,mes,ano,tipo,descricao,valor,cat) values ('$dia','$mes','$ano','$tipo','$descricao','$valor','$cat')");
-
-    echo mysql_error();
-
-    header("Location: ?mes=" . $_GET['mes'] . "&ano=" . $_GET['ano'] . "&ok=1");
-    exit();
-}
 
 if (isset($_GET['mes']))
     $mes_hoje = $_GET['mes'];
@@ -101,453 +16,406 @@ else
     $ano_hoje = date('Y');
 ?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title id='titulo'>Livro caixa <?php echo $lc_titulo?></title>
-<meta name="LANGUAGE" content="Portuguese" />
-<meta name="AUDIENCE" content="all" />
-<meta name="RATING" content="GENERAL" />
-<link href="styles.css" rel="stylesheet" type="text/css" />
-<script language="javascript" src="scripts.js"></script>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>SB Admin - Bootstrap Admin Template</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="template/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="template/css/sb-admin.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="template/css/plugins/morris.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="template/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.template/js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
 </head>
-<body style="padding:10px">
 
-
-<table cellpadding="1" cellspacing="10"  width="900" align="center" style="background-color:#033">
-
-<tr>
-<td colspan="11" style="background-color:#005B5B;">
-<h2 style="color:#FFF; margin:5px">Livro Caixa - <?php echo $lc_titulo?></h2>
-</td>
-<td colspan="2" align="right" style="background-color:#005B5B;">
-<a style="color:#FFF" href="?mes=<?php echo date('m')?>&ano=<?php echo date('Y')?>">Hoje:<strong> <?php echo date('d')?> de <?php echo mostraMes(date('m'))?> de <?php echo date('Y')?></strong></a>&nbsp; 
-</td>
-</tr>
-<tr>
-
-<td width="70">
-<select onchange="location.replace('?mes=<?php echo $mes_hoje?>&ano='+this.value)">
-<?php
-for ($i=2008;$i<=2020;$i++){
-?>
-<option value="<?php echo $i?>" <?php if ($i==$ano_hoje) echo "selected=selected"?> ><?php echo $i?></option>
-<?php }?>
-</select>
-</td>
-
-
-<?php
-for ($i=1;$i<=12;$i++){
-	?>
-    <td align="center" style="<?php if ($i!=12) echo "border-right:1px solid #FFF;"?> padding-right:5px">
-    <a href="?mes=<?php echo $i?>&ano=<?php echo $ano_hoje?>" style="
-    <?php if($mes_hoje==$i){?>    
-    color:#033; font-size:16px; font-weight:bold; background-color:#FFF; padding:5px
-    <?php }else{?>
-    color:#FFF; font-size:16px;
-    <?php }?>
-    ">
-    <?php echo mostraMes($i);?>
-    </a>
-    </td>
-<?php
-}
-?>
-</tr>
-</table>
-<br />
-
-
-
-<table cellpadding="10" cellspacing="0" width="900" align="center" >
-<tr>
-<td colspan="2">
-
-<h2><?php echo mostraMes($mes_hoje)?>/<?php echo $ano_hoje?></h2>
-</td>
-<td align="right">
-<a href="javascript:;" onclick="abreFecha('add_cat')" class="bnt">[+] Adicionar Categoria</a>
-<a href="javascript:;" onclick="abreFecha('add_movimento')" class="bnt"><strong>[+] Adicionar Movimento</strong></a>
-</td>
-</tr>
-
-<tr >
-<td colspan="3" >
-
-    <?php
-if (isset($_GET['cat_err']) && $_GET['cat_err']==1){
-?>
-
-<div style="padding:5px; background-color:#FF6; text-align:center; color:#030">
-<strong>Esta categoria não pode ser removida, pois há movimentos associados a esta</strong>
-</div>
-
-<?php }?>
-
-    <?php
-if (isset($_GET['cat_ok']) && $_GET['cat_ok']==2){
-?>
-
-<div style="padding:5px; background-color:#FF6; text-align:center; color:#030">
-<strong>Categoria removida com sucesso!</strong>
-</div>
-
-<?php }?>
-    
-<?php
-if (isset($_GET['cat_ok']) && $_GET['cat_ok']==1){
-?>
-
-<div style="padding:5px; background-color:#FF6; text-align:center; color:#030">
-<strong>Categoria Cadastrada com sucesso!</strong>
-</div>
-
-<?php }?>
-    
-    <?php
-if (isset($_GET['cat_ok']) && $_GET['cat_ok']==3){
-?>
-
-<div style="padding:5px; background-color:#FF6; text-align:center; color:#030">
-<strong>Categoria alterada com sucesso!</strong>
-</div>
-
-<?php }?>
-
-<?php
-if (isset($_GET['ok']) && $_GET['ok']==1){
-?>
-
-<div style="padding:5px; background-color:#FF6; text-align:center; color:#030">
-<strong>Movimento Cadastrado com sucesso!</strong>
-</div>
-
-<?php }?>
-
-<?php
-if (isset($_GET['ok']) && $_GET['ok']==2){
-?>
-
-<div style="padding:5px; background-color:#900; text-align:center; color:#FFF">
-<strong>Movimento removido com sucesso!</strong>
-</div>
-
-<?php }?>
-    
-    <?php
-if (isset($_GET['ok']) && $_GET['ok']==3){
-?>
-
-<div style="padding:5px; background-color:#FF6; text-align:center; color:#030">
-<strong>Movimento alterado com sucesso!</strong>
-</div>
-
-<?php }?>
-
-<div style=" background-color:#F1F1F1; padding:10px; border:1px solid #999; margin:5px; display:none" id="add_cat">
-    <h3>Adicionar Categoria</h3>
-    <table width="100%">
-        <tr>
-            <td valign="top">
-    
-
-<form method="post" action="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>">
-<input type="hidden" name="acao" value="2" />
-
-Nome: <input type="text" name="nome" size="20" maxlength="50" />
-
-<br />
-<br />
-
-<input type="submit" class="input" value="Enviar" />
-</form>
-
-            </td>
-            <td valign="top" align="right">
-                <b>Editar/Remover Categorias:</b><br/><br/>
-<?php
-$qr=mysql_query("SELECT id, nome FROM lc_cat");
-while ($row=mysql_fetch_array($qr)){
-?>
-                <div id="editar2_cat_<?php echo $row['id']?>">
-<?php echo $row['nome']?>  
-                    
-                     <a style="font-size:10px; color:#666" onclick="return confirm('Tem certeza que deseja remover esta categoria?\nAtenção: Apenas categorias sem movimentos associados poderão ser removidas.')" href="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>&acao=apagar_cat&id=<?php echo $row['id']?>" title="Remover">[remover]</a>
-                     <a href="javascript:;" style="font-size:10px; color:#666" onclick="document.getElementById('editar_cat_<?php echo $row['id']?>').style.display=''; document.getElementById('editar2_cat_<?php echo $row['id']?>').style.display='none'" title="Editar">[editar]</a>
-                    
-                </div>
-                <div style="display:none" id="editar_cat_<?php echo $row['id']?>">
-                    
-<form method="post" action="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>">
-<input type="hidden" name="acao" value="editar_cat" />
-<input type="hidden" name="id" value="<?php echo $row['id']?>" />
-<input type="text" name="nome" value="<?php echo $row['nome']?>" size="20" maxlength="50" />
-<input type="submit" class="input" value="Alterar" />
-</form> 
-                </div>
-
-<?php }?>
-
-            </td>
-        </tr>
-    </table>
-</div>
-
-<div style=" background-color:#F1F1F1; padding:10px; border:1px solid #999; margin:5px; display:none" id="add_movimento">
-<h3>Adicionar Movimento</h3>
-<?php
-$qr=mysql_query("SELECT * FROM lc_cat");
-if (mysql_num_rows($qr)==0)
-	echo "Adicione ao menos uma categoria";
-
-else{
-?>
-<form method="post" action="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>">
-<input type="hidden" name="acao" value="1" />
-<strong>Data:</strong><br />
-<input type="text" name="data" size="11" maxlength="10" value="<?php echo date('d')?>/<?php echo $mes_hoje?>/<?php echo $ano_hoje?>" />
-
-<br />
-<br />
-
-<strong>Tipo:<br /></strong>
-<label for="tipo_receita" style="color:#030"><input type="radio" name="tipo" value="1" id="tipo_receita" /> Receita</label>&nbsp; 
-<label for="tipo_despesa" style="color:#C00"><input type="radio" name="tipo" value="0" id="tipo_despesa" /> Despesa</label>
-
-<br />
-<br />
-
-<strong>Categoria:</strong><br />
-<select name="cat">
-<?php
-while ($row=mysql_fetch_array($qr)){
-?>
-<option value="<?php echo $row['id']?>"><?php echo $row['nome']?></option>
-<?php }?>
-</select>
-
-<br />
-<br />
-
-<strong>Descrição:</strong><br />
-<input type="text" name="descricao" size="100" maxlength="255" />
-
-<br />
-<br />
-
-<strong>Valor:</strong><br />
-R$<input type="text" name="valor" size="8" maxlength="10" />
-
-<br />
-<br />
-
-<input type="submit" class="input" value="Enviar" />
-
-</form>
-<?php }?>
-</div>
-</td>
-</tr>
-
-<tr>
-<td align="left" valign="top" width="450" style="background-color:#D3FFE2">
-
-<?php
-$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 && mes='$mes_hoje' && ano='$ano_hoje'");
-$row=mysql_fetch_array($qr);
-$entradas=$row['total'];
-
-$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 && mes='$mes_hoje' && ano='$ano_hoje'");
-$row=mysql_fetch_array($qr);
-$saidas=$row['total'];
-
-$resultado_mes=$entradas-$saidas;
-?>
-
-    <fieldset>
-        <legend><strong>Entradas e Saídas deste mês</strong></legend>
-        <table cellpadding="0" cellspacing="0" width="100%">
-            <tr>
-                <td><span style="font-size:18px; color:#030">Entradas:</span></td>
-                <td align="right"><span style="font-size:18px; color:#030"><?php echo formata_dinheiro($entradas) ?></span></td>
-            </tr>
-            <tr>
-                <td><span style="font-size:18px; color:#C00">Saídas:</span></td>
-                <td align="right"><span style="font-size:18px; color:#C00"><?php echo formata_dinheiro($saidas) ?></span></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <hr size="1" />
-                </td>
-            </tr>
-            <tr>
-                <td><strong style="font-size:22px; color:<?php if ($resultado_mes < 0) echo "#C00"; else echo "#030" ?>">Resultado:</strong></td>
-                <td align="right"><strong style="font-size:22px; color:<?php if ($resultado_mes < 0) echo "#C00"; else echo "#030" ?>"><?php echo formata_dinheiro($resultado_mes) ?></strong></td>
-            </tr>
-        </table>
-    </fieldset>
-
-</td>
-
-<td width="15">
-</td>
-
-<td align="left" valign="top" width="450" style="background-color:#F1F1F1">
-<fieldset>
-<legend>Balanço Geral</legend>
-
-<?php
-
-$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 ");
-$row=mysql_fetch_array($qr);
-$entradas=$row['total'];
-
-$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 ");
-$row=mysql_fetch_array($qr);
-$saidas=$row['total'];
-
-$resultado_geral=$entradas-$saidas;
-?>
-
-
-<table cellpadding="0" cellspacing="0" width="100%">
-<tr>
-<td><span style="font-size:18px; color:#030">Entradas:</span></td>
-<td align="right"><span style="font-size:18px; color:#030"><?php echo formata_dinheiro($entradas)?></span></td>
-</tr>
-<tr>
-<td><span style="font-size:18px; color:#C00">Saídas:</span></td>
-<td align="right"><span style="font-size:18px; color:#C00"><?php echo formata_dinheiro($saidas)?></span></td>
-</tr>
-<tr>
-<td colspan="2">
-<hr size="1" />
-</td>
-</tr>
-<tr>
-<td><strong style="font-size:22px; color:<?php if ($resultado_geral<0) echo "#C00"; else echo "#030"?>">Resultado:</strong></td>
-<td align="right"><strong style="font-size:22px; color:<?php if ($resultado_geral<0) echo "#C00"; else echo "#030"?>"><?php echo formata_dinheiro($resultado_geral)?></strong></td>
-</tr>
-</table>
-
-</fieldset>
-</td>
-
-</tr>
-</table>
-<br />
-
-
-<table cellpadding="5" cellspacing="0" width="900" align="center">
-<tr>
-<td colspan="2">
-    <div style="float:right; text-align:right">
-<form name="form_filtro_cat" method="get" action=""  >
-<input type="hidden" name="mes" value="<?php echo $mes_hoje?>" >
-<input type="hidden" name="ano" value="<?php echo $ano_hoje?>" >
-    Filtrar por categoria:  <select name="filtro_cat" onchange="form_filtro_cat.submit()">
-<option value="">Tudo</option>
-<?php
-$qr=mysql_query("SELECT DISTINCT c.id, c.nome FROM lc_cat c, lc_movimento m WHERE m.cat=c.id && m.mes='$mes_hoje' && m.ano='$ano_hoje'");
-while ($row=mysql_fetch_array($qr)){
-?>
-<option <?php if (isset($_GET['filtro_cat']) && $_GET['filtro_cat']==$row['id'])echo "selected=selected"?> value="<?php echo $row['id']?>"><?php echo $row['nome']?></option>
-<?php }?>
-</select>
-  <input type="submit" value="Filtrar" class="botao" />
-</form>
-    </div>
-
-<h2>Movimentos deste Mês</h2>
-
-</td>
-</tr>
-<?php
-$filtros="";
-if (isset($_GET['filtro_cat'])){
-	if ($_GET['filtro_cat']!=''){	
-		$filtros="&& cat='".$_GET['filtro_cat']."'";
-                
-                $qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 && mes='$mes_hoje' && ano='$ano_hoje' $filtros");
-                $row=mysql_fetch_array($qr);
-                $entradas=$row['total'];
-
-                $qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 && mes='$mes_hoje' && ano='$ano_hoje' $filtros");
-                $row=mysql_fetch_array($qr);
-                $saidas=$row['total'];
-
-                $resultado_mes=$entradas-$saidas;
-                
-        }
-}
-
-$qr=mysql_query("SELECT * FROM lc_movimento WHERE mes='$mes_hoje' && ano='$ano_hoje' $filtros ORDER By dia");
-$cont=0;
-while ($row=mysql_fetch_array($qr)){
-$cont++;
-
-$cat=$row['cat'];
-$qr2=mysql_query("SELECT nome FROM lc_cat WHERE id='$cat'");
-$row2=mysql_fetch_array($qr2);
-$categoria=$row2['nome'];
-
-?>
-<tr style="background-color:<?php if ($cont%2==0) echo "#F1F1F1"; else echo "#E0E0E0"?>" >
-<td align="center" width="15"><?php echo $row['dia']?></td>
-<td><?php echo $row['descricao']?> <em>(<a href="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>&filtro_cat=<?php echo $cat?>"><?php echo $categoria?></a>)</em> <a href="javascript:;" style="font-size:10px; color:#666" onclick="document.getElementById('editar_mov_<?php echo $row['id']?>').style.display='';  " title="Editar">[editar]</a></td>
-<td align="right"><strong style="color:<?php if ($row['tipo']==0) echo "#C00"; else echo "#030"?>"><?php if ($row['tipo']==0) echo "-"; else echo "+"?><?php echo formata_dinheiro($row['valor'])?></strong></td>
-</tr>
-    <tr style="display:none; background-color:<?php if ($cont%2==0) echo "#F1F1F1"; else echo "#E0E0E0"?>" id="editar_mov_<?php echo $row['id']?>">
-        <td colspan="3">
-            <hr/>
-            <form method="post" action="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>">
-            <input type="hidden" name="acao" value="editar_mov" />
-            <input type="hidden" name="id" value="<?php echo $row['id']?>" />
-            
-            <b>Dia:</b> <input type="text" name="dia" size="3" maxlength="2" value="<?php echo $row['dia']?>" />&nbsp;|&nbsp;
-            <b>Tipo:</b> <label for="tipo_receita<?php echo $row['id']?>" style="color:#030"><input <?php if($row['tipo']==1) echo "checked=checked"?> type="radio" name="tipo" value="1" id="tipo_receita<?php echo $row['id']?>" /> Receita</label>&nbsp; <label for="tipo_despesa<?php echo $row['id']?>" style="color:#C00"><input <?php if($row['tipo']==0) echo "checked=checked"?> type="radio" name="tipo" value="0" id="tipo_despesa<?php echo $row['id']?>" /> Despesa</label>&nbsp;|&nbsp;
-            <b>Categoria:</b>
-<select name="cat">
-<?php
-$qr2=mysql_query("SELECT * FROM lc_cat");
-while ($row2=mysql_fetch_array($qr2)){
-?>
-    <option <?php if($row2['id']==$row['cat']) echo "selected"?> value="<?php echo $row2['id']?>"><?php echo $row2['nome']?></option>
-<?php }?>
-</select>&nbsp;|&nbsp;
-            <b>Valor:</b> R$<input type="text" value="<?php echo $row['valor']?>" name="valor" size="8" maxlength="10" />
-            <br/>
-            <b>Descricao:</b> <input type="text" name="descricao" value="<?php echo $row['descricao']?>" size="70" maxlength="255" />
-            
-            <input type="submit" class="input" value="Alterar" />
-            </form> 
-            <div style="text-align: right">
-            <a style="color:#FF0000" onclick="return confirm('Tem certeza que deseja apagar?')" href="?mes=<?php echo $mes_hoje?>&ano=<?php echo $ano_hoje?>&acao=apagar&id=<?php echo $row['id']?>" title="Remover">[remover]</a> 
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">SB Admin</a>
             </div>
-            <hr/>
-        </td>
-    </tr>
-      
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
+                    <ul class="dropdown-menu message-dropdown">
+                        <li class="message-preview">
+                            <a href="#">
+                                <div class="media">
+                                    <span class="pull-left">
+                                        <img class="media-object" src="http://placehold.it/50x50" alt="">
+                                    </span>
+                                    <div class="media-body">
+                                        <h5 class="media-heading"><strong>John Smith</strong>
+                                        </h5>
+										
+                                        <p class="small text-muted"><i class="fa fa-clock-o"></i> Yesterday at 4:32 PM</p>
+                                        <p>Lorem ipsum dolor sit amet, consectetur...</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="message-preview">
+                            <a href="#">
+                                <div class="media">
+                                    <span class="pull-left">
+                                        <img class="media-object" src="http://placehold.it/50x50" alt="">
+                                    </span>
+                                    <div class="media-body">
+                                        <h5 class="media-heading"><strong>John Smith</strong>
+                                        </h5>
+                                        <p class="small text-muted"><i class="fa fa-clock-o"></i> Yesterday at 4:32 PM</p>
+                                        <p>Lorem ipsum dolor sit amet, consectetur...</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="message-preview">
+                            <a href="#">
+                                <div class="media">
+                                    <span class="pull-left">
+                                        <img class="media-object" src="http://placehold.it/50x50" alt="">
+                                    </span>
+                                    <div class="media-body">
+                                        <h5 class="media-heading"><strong>John Smith</strong>
+                                        </h5>
+                                        <p class="small text-muted"><i class="fa fa-clock-o"></i> Yesterday at 4:32 PM</p>
+                                        <p>Lorem ipsum dolor sit amet, consectetur...</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="message-footer">
+                            <a href="#">Read All New Messages</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bell"></i> <b class="caret"></b></a>
+                    <ul class="dropdown-menu alert-dropdown">
+                        <li>
+                            <a href="#">Alert Name <span class="label label-default">Alert Badge</span></a>
+                        </li>
+                        <li>
+                            <a href="#">Alert Name <span class="label label-primary">Alert Badge</span></a>
+                        </li>
+                        <li>
+                            <a href="#">Alert Name <span class="label label-success">Alert Badge</span></a>
+                        </li>
+                        <li>
+                            <a href="#">Alert Name <span class="label label-info">Alert Badge</span></a>
+                        </li>
+                        <li>
+                            <a href="#">Alert Name <span class="label label-warning">Alert Badge</span></a>
+                        </li>
+                        <li>
+                            <a href="#">Alert Name <span class="label label-danger">Alert Badge</span></a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="#">View All</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-envelope"></i> Inbox</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-gear"></i> Settings</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-power-off"></i> Log Out</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li class="active">
+                        <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="charts.html"><i class="fa fa-fw fa-bar-chart-o"></i> Charts</a>
+                    </li>
+                    <li>
+                        <a href="tables.html"><i class="fa fa-fw fa-table"></i> Tables</a>
+                    </li>
+                    <li>
+                        <a href="forms.html"><i class="fa fa-fw fa-edit"></i> Forms</a>
+                    </li>
+                    <li>
+                        <a href="bootstrap-elements.html"><i class="fa fa-fw fa-desktop"></i> Bootstrap Elements</a>
+                    </li>
+                    <li>
+                        <a href="bootstrap-grid.html"><i class="fa fa-fw fa-wrench"></i> Bootstrap Grid</a>
+                    </li>
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-arrows-v"></i> Dropdown <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="demo" class="collapse">
+                            <li>
+                                <a href="#">Dropdown Item</a>
+                            </li>
+                            <li>
+                                <a href="#">Dropdown Item</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="blank-page.html"><i class="fa fa-fw fa-file"></i> Blank Page</a>
+                    </li>
+                    <li>
+                        <a href="index-rtl.html"><i class="fa fa-fw fa-dashboard"></i> RTL Dashboard</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            Livro caixa 
+                        </h1>
+						<p class="small text-muted"><i class="fa fa-clock-o"></i> 
+							<a href="?mes=<?php echo date('m')?>&ano=<?php echo date('Y')?>">
+							Hoje:
+							<strong> <?php echo date('d')?> de <?php echo mostraMes(date('m'))?> de <?php echo date('Y')?>
+							</strong>
+							</a>
+						</p>
+                    </div>
+                </div>
+				<?php
+					$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 && mes='$mes_hoje' && ano='$ano_hoje'");
+					$row=mysql_fetch_array($qr);
+					$entradas=$row['total'];
+
+					$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 && mes='$mes_hoje' && ano='$ano_hoje'");
+					$row=mysql_fetch_array($qr);
+					$saidas=$row['total'];
+
+					$resultado_mes=$entradas-$saidas;
+				?>
+                <div class="row">
+                    <div class="col-lg-6 col-md-6">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <div class="row" style="padding:0px 10px 0px 10px;">
+									<h2 style="margin-top:0px;">
+										<i class="fa fa-money"></i>
+										MovimentaÃ§Ãµes no mÃªs
+									</h2>
+									<table class="table" style="margin-bottom:0px;">
+										<tr>
+											<td>Entradas</td>
+											<td class="text-right"><?php echo formata_dinheiro($entradas); ?></td>
+										</tr>
+										<tr>
+											<td>SaÃ­das</td>
+											<td class="text-right"><?php echo formata_dinheiro($saidas); ?></td>
+										</tr>
+									</table>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <span class="pull-left"><strong>Total</strong></span>
+                                <span class="pull-right">
+									<strong>
+										<?php echo formata_dinheiro($resultado_mes); ?>
+									</strong>	
+								</span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+					<?php
+						$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 ");
+						$row=mysql_fetch_array($qr);
+						$entradas=$row['total'];
+
+						$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 ");
+						$row=mysql_fetch_array($qr);
+						$saidas=$row['total'];
+
+						$resultado_geral=$entradas-$saidas;
+					?>
+
+                    <div class="col-lg-6 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row" style="padding:0px 10px 0px 10px;">
+									<h2 style="margin-top:0px;">
+										<i class="fa fa-money"></i>
+										BalanÃ§o geral
+									</h2>
+									<table class="table" style="margin-bottom:0px;">
+										<tr>
+											<td>Entradas</td>
+											<td class="text-right"><?php echo formata_dinheiro($entradas); ?></td>
+										</tr>
+										<tr>
+											<td>SaÃ­das</td>
+											<td class="text-right"><?php echo formata_dinheiro($saidas); ?></td>
+										</tr>
+									</table>
+                                </div>
+                            </div>
+                            <div class="panel-footer">
+                                <span class="pull-left"><strong>Total</strong></span>
+                                <span class="pull-right">
+									<strong>
+										<?php echo formata_dinheiro($resultado_geral); ?>
+									</strong>
+								</span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+                <!-- /.row -->
+                <div class="row">
+                    <div class="col-lg-12">
+						<?php
+						for($x=1; $x<=12; $x++):
+						 $active = ($mes_hoje == $x) ? 'btn-success' : 'btn-primary';
+						?>
+                        <a href="?mes=<?php echo $x?>&ano=<?php echo $ano_hoje?>" class="btn btn-sm <?php echo $active; ?>" type="button"><?php echo mostraMes($x);?></a>
+						<?php 
+						endfor;
+						?>
+                    </div>
+                </div>
+                <!-- /.row -->
 <?php
-}
+	$query = "SELECT lc_movimento.*, lc_cat.nome 
+		FROM lc_movimento INNER JOIN lc_cat 
+		ON lc_movimento.cat = lc_cat.id WHERE lc_movimento.mes='{$mes_hoje}' && lc_movimento.ano='{$ano_hoje}' ORDER By dia";
+		
+	$result = mysql_query($query);
+	while( $movimento = mysql_fetch_object($result) ){
+		$movimentos[] = $movimento;
+	}
+	
 ?>
-<tr>
-<td colspan="3" align="right">
-<strong style="font-size:22px; color:<?php if ($resultado_mes<0) echo "#C00"; else echo "#030"?>"><?php echo formata_dinheiro($resultado_mes)?></strong>
-</td>
-</tr>
-</table>
-<br />
-<br />
-<table cellpadding="5" cellspacing="0" width="900" align="center">
-<tr>
-<td align="right">
-<hr size="1" />
-<em>Livro Caixa - <strong><?php echo $lc_titulo?></strong> - Desenvolvido por <a href=http://www.paulocollares.com.br>Paulo Collares</a>. Versão 1.3 (11/06/13) <a href="login.php?sair">Fazer logout</a></em>
-</td>
-</tr>
-</table>
+				<br>
+                <div class="row">
+				    <div class="table-responsive panel panel-default">
+						 <div class="panel-heading">
+							<h3 class="panel-title">
+								<i class="fa fa-table"></i> 
+								&nbsp;
+								MovimentaÃ§Ãµes no mÃªs
+							</h3>
+						</div>
+						<?php if($movimentos): ?>
+                        <table class="table table-bordered table-hover table-striped">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>DescriÃ§Ã£o</th>
+									<th>Categoria</th>
+									<th>Tipo</th>
+									<th>Valor</th>
+								</tr>
+							</thead>
+							<tbody>
+							<?php foreach($movimentos as $movimento): ?>
+							<tr>
+								<td><?php echo $movimento->id; ?></td>
+								<td><?php echo $movimento->descricao ?></td>
+								<td><?php echo $movimento->nome ?></td>
+								<td>
+									<?php
+										$text = 'Despesa';
+										$classMov = 'label-danger';
+										if( $movimento->tipo ){
+											$text = 'Receita';
+											$classMov = 'label-success';
+										}
+									?>
+									<span class="label <?php echo $classMov; ?>">
+										<?php echo $text; ?>
+									</span>	
+								</td>
+								<td><?php echo formata_dinheiro($movimento->valor); ?></td>
+							</tr>
+							<?php endforeach; ?>
+							</tbody>
+						</table>
+						<?php else: ?>
+						<div class="panel-body">
+							Sem movimentos neste mÃªs 
+						</div>
+						<?php endif; ?>
+					</div>
+                </div>
+                <!-- /.row -->
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="template/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="template/js/bootstrap.min.js"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="template/js/plugins/morris/raphael.min.js"></script>
+    <script src="template/js/plugins/morris/morris.min.js"></script>
+    <script src="template/js/plugins/morris/morris-data.js"></script>
+
 </body>
+
 </html>
