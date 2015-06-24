@@ -1,10 +1,4 @@
 <?php
-
-function formata_dinheiro($valor) {
-    $valor = number_format($valor, 2, ',', '');
-    return "R$ " . $valor;
-}
-
 function mostraMes($m) {
     switch ($m) {
         case 01: case 1: $mes = "Janeiro";
