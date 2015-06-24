@@ -1,24 +1,16 @@
 <?php
 
-//Configuração do Banco de dados
-$host = "localhost";
-$user = "root";
-$pass = "root";
-$d_b = "livro_caixa";
-
-//Título do seu livro Caixa, geralmente seu nome
-$lc_titulo="Seu nome";
-
 //Autenticação simples
 $usuario="admin";
 $senha="123";
 
-//////////////////////////////////////
-//Não altere a partir daqui!
-//////////////////////////////////////
+$username = 'root';
+$password = 'root';
+$dsn = 'mysql:host=localhost;port=3306;dbname=livro_caixa';
+$db = new PDO($dsn, $username, $password);
 
-$conn = mysql_connect($host, $user, $pass) or die("Erro na conexÐ³o com a base de dados");
-$db = mysql_select_db($d_b, $conn) or die("Erro na seleÐ·Ð³o da base de dados");
+define('MONEY', 'R$');
+define('TITLE', 'Livro caixa - Demo');
 
 if (isset($_SESSION['logado']))
     $logado = $_SESSION['logado'];

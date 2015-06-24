@@ -1,9 +1,10 @@
 ﻿<?php
 session_start();
-set_time_limit(0);
 
 include 'config.php';
 include 'functions.php';
+require_once 'classes/Movimento.class.php';
+require_once 'classes/Categoria.class.php';
 
 if (isset($_GET['mes']))
     $mes_hoje = $_GET['mes'];
@@ -14,8 +15,22 @@ if (isset($_GET['ano']))
     $ano_hoje = $_GET['ano'];
 else
     $ano_hoje = date('Y');
-?>
 
+$dataParam = new DateTime(date('Y-m-d'));
+$dataAtual = new Datetime('now');
+
+if( isset($_GET['data']) ){
+	$dataParam= new DateTime($_GET['data']);
+}
+$categoriaObj = new Categoria($db);
+
+$movimentoObj = new Movimento($db);
+$totalReceitas = sprintf('%.2f', $movimentoObj->getTotal('receita'));
+$totalDespesas = sprintf('%.2f',$movimentoObj->getTotal('despesa'));
+$totalReceitasMes = sprintf('%.2f', $movimentoObj->getTotal('receita', $dataParam->format('Y-m')));
+$totalDespesasMes = sprintf('%.2f', $movimentoObj->getTotal('despesa', $dataParam->format('Y-m')));
+$movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,7 +42,7 @@ else
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin - Bootstrap Admin Template</title>
+    <title><?php echo TITLE ?></title>
 
     <!-- Bootstrap Core CSS -->
     <link href="template/css/bootstrap.min.css" rel="stylesheet">
@@ -218,29 +233,18 @@ else
                 <!-- Page Heading -->
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1 class="page-header">
-                            Livro caixa 
+                        <h1 class="page-header" style="margin-top:5px;">
+                            <?php echo TITLE; ?> 
                         </h1>
 						<p class="small text-muted"><i class="fa fa-clock-o"></i> 
-							<a href="?mes=<?php echo date('m')?>&ano=<?php echo date('Y')?>">
+							<a href="?data=<?php echo $dataAtual->format('Y-m-d'); ?>">
 							Hoje:
-							<strong> <?php echo date('d')?> de <?php echo mostraMes(date('m'))?> de <?php echo date('Y')?>
+							<strong> <?php echo $dataAtual->format('d'); ?> de <?php echo mostraMes($dataAtual->format('m')); ?> de <?php echo $dataAtual->format('Y');?>
 							</strong>
 							</a>
 						</p>
                     </div>
                 </div>
-				<?php
-					$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 && mes='$mes_hoje' && ano='$ano_hoje'");
-					$row=mysql_fetch_array($qr);
-					$entradas=$row['total'];
-
-					$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 && mes='$mes_hoje' && ano='$ano_hoje'");
-					$row=mysql_fetch_array($qr);
-					$saidas=$row['total'];
-
-					$resultado_mes=$entradas-$saidas;
-				?>
                 <div class="row">
                     <div class="col-lg-6 col-md-6">
                         <div class="panel panel-primary">
@@ -253,11 +257,11 @@ else
 									<table class="table" style="margin-bottom:0px;">
 										<tr>
 											<td>Entradas</td>
-											<td class="text-right"><?php echo formata_dinheiro($entradas); ?></td>
+											<td class="text-right"><?php printf(MONEY.' %.2f', $totalReceitasMes); ?></td>
 										</tr>
 										<tr>
 											<td>Saídas</td>
-											<td class="text-right"><?php echo formata_dinheiro($saidas); ?></td>
+											<td class="text-right"><?php printf(MONEY.' %.2f', $totalDespesasMes); ?></td>
 										</tr>
 									</table>
                                 </div>
@@ -266,25 +270,13 @@ else
                                 <span class="pull-left"><strong>Total</strong></span>
                                 <span class="pull-right">
 									<strong>
-										<?php echo formata_dinheiro($resultado_mes); ?>
+										<?php printf(MONEY.' %.2f', $totalReceitasMes-$totalDespesasMes); ?>
 									</strong>	
 								</span>
                                 <div class="clearfix"></div>
                             </div>
                         </div>
                     </div>
-					<?php
-						$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=1 ");
-						$row=mysql_fetch_array($qr);
-						$entradas=$row['total'];
-
-						$qr=mysql_query("SELECT SUM(valor) as total FROM lc_movimento WHERE tipo=0 ");
-						$row=mysql_fetch_array($qr);
-						$saidas=$row['total'];
-
-						$resultado_geral=$entradas-$saidas;
-					?>
-
                     <div class="col-lg-6 col-md-6">
                         <div class="panel panel-green">
                             <div class="panel-heading">
@@ -296,11 +288,11 @@ else
 									<table class="table" style="margin-bottom:0px;">
 										<tr>
 											<td>Entradas</td>
-											<td class="text-right"><?php echo formata_dinheiro($entradas); ?></td>
+											<td class="text-right"><?php printf(MONEY.' %.2f', $totalReceitas); ?></td>
 										</tr>
 										<tr>
 											<td>Saídas</td>
-											<td class="text-right"><?php echo formata_dinheiro($saidas); ?></td>
+											<td class="text-right"><?php printf(MONEY.' %.2f', $totalDespesas); ?></td>
 										</tr>
 									</table>
                                 </div>
@@ -309,7 +301,7 @@ else
                                 <span class="pull-left"><strong>Total</strong></span>
                                 <span class="pull-right">
 									<strong>
-										<?php echo formata_dinheiro($resultado_geral); ?>
+										<?php printf(MONEY.' %.2f', $totalReceitas-$totalDespesas); ?>
 									</strong>
 								</span>
                                 <div class="clearfix"></div>
@@ -323,26 +315,15 @@ else
                     <div class="col-lg-12">
 						<?php
 						for($x=1; $x<=12; $x++):
-						 $active = ($mes_hoje == $x) ? 'btn-success' : 'btn-primary';
+						 $active = ($dataParam->format('m') == $x) ? 'btn-success' : 'btn-primary';
 						?>
-                        <a href="?mes=<?php echo $x?>&ano=<?php echo $ano_hoje?>" class="btn btn-sm <?php echo $active; ?>" type="button"><?php echo mostraMes($x);?></a>
+                        <a href="?data=2015-<?php echo $x; ?>-01" class="btn btn-sm <?php echo $active; ?>" type="button"><?php echo mostraMes($x);?></a>
 						<?php 
 						endfor;
 						?>
                     </div>
                 </div>
                 <!-- /.row -->
-<?php
-	$query = "SELECT lc_movimento.*, lc_cat.nome 
-		FROM lc_movimento INNER JOIN lc_cat 
-		ON lc_movimento.cat = lc_cat.id WHERE lc_movimento.mes='{$mes_hoje}' && lc_movimento.ano='{$ano_hoje}' ORDER By dia";
-		
-	$result = mysql_query($query);
-	while( $movimento = mysql_fetch_object($result) ){
-		$movimentos[] = $movimento;
-	}
-	
-?>
 				<br>
                 <div class="row">
 				    <div class="table-responsive panel panel-default">
@@ -353,7 +334,7 @@ else
 								Movimentações no mês
 							</h3>
 						</div>
-						<?php if($movimentos): ?>
+						<?php if(is_array($movimentos)): ?>
                         <table class="table table-bordered table-hover table-striped">
 							<thead>
 								<tr>
@@ -362,14 +343,20 @@ else
 									<th>Categoria</th>
 									<th>Tipo</th>
 									<th>Valor</th>
+									<th>Data vencimento</th>
+									<th>Pago</th>
 								</tr>
 							</thead>
 							<tbody>
-							<?php foreach($movimentos as $movimento): ?>
+							<?php 
+								foreach($movimentos as $movimento): 
+								$categoriaObj->id = $movimento->cat_id; 
+								$categoriaObj->load();
+							?>
 							<tr>
 								<td><?php echo $movimento->id; ?></td>
 								<td><?php echo $movimento->descricao ?></td>
-								<td><?php echo $movimento->nome ?></td>
+								<td><span class="badge"><?php echo $categoriaObj->nome; ?></span></td>
 								<td>
 									<?php
 										$text = 'Despesa';
@@ -383,7 +370,20 @@ else
 										<?php echo $text; ?>
 									</span>	
 								</td>
-								<td><?php echo formata_dinheiro($movimento->valor); ?></td>
+								<td><?php printf(MONEY.' %.2f', $movimento->valor); ?></td>
+								<td>
+								<?php 
+									$dataVencimento = new Datetime($movimento->data_vencimento);
+									echo $dataVencimento->format('d/m/Y');
+								?>
+								</td>
+								<td>
+								<?php 
+								
+									$checked = $movimento->pago ? 'checked' : '';
+								?>
+								    <input type="checkbox" name="pago" <?php echo $checked ?>>
+                                </td>
 							</tr>
 							<?php endforeach; ?>
 							</tbody>
