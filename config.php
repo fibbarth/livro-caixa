@@ -11,27 +11,15 @@ $db = new PDO($dsn, $username, $password);
 
 define('MONEY', 'R$');
 define('TITLE', 'Livro caixa - Demo');
+define('SECRET_KEY', 'SEGREDO');
 
-if (isset($_SESSION['logado']))
-    $logado = $_SESSION['logado'];
-else
-    $logado = "";
+##########Definições de cookie
+define('NAME_COOKIE', 'livro_caixa');
+define('EXPIRE_COOKIE', 0);
+define('PATH_COOKIE', '/');
+define('DOMAIN_COOKIE', '.caixa.dev');
+define('SECURE_COOKIE', 0);
+define('HTTPONLY_COOKIE', 1);
 
-$senha_ = md5($senha);
-
-if (isset($_POST['login']) && $_POST['login'] != '') {
-
-    if ($_POST['login'] == $usuario && $_POST['senha'] == $senha) {
-        $logado = $_SESSION['logado'] = md5($_POST['senha']);
-        header("Location: ./");
-        exit();
-    }
-}
-
-if ($logado != $senha_ && !isset($pagina_login)) {
-
-    header("Location: login.php");
-
-    exit();
-}
+define('LIVE_SITE', 'caixa.dev');
 ?>

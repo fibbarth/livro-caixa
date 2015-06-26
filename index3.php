@@ -1,10 +1,17 @@
 <?php
 	ini_set('display_errors', 1);
 	require_once 'classes/Movimento.class.php';
+	require_once 'classes/Usuario.class.php';
 	$username = 'root';
 	$password = 'root';
 	$dsn = 'mysql:host=localhost;port=3306;dbname=livro_caixa';
 	$db = new PDO($dsn, $username, $password);
+	$usuario = new Usuario($db);
+	$usuario->nome = 'Felipe Barth';
+	$usuario->email = 'fibbarth@gmail.com';
+	$usuario->password = md5('nicole2904');
+	$usuario->save();
+	/*
 	$movimento = new Movimento($db);
 	$movimento->id = 1;
 	$movimento->load();
@@ -27,5 +34,6 @@
 	$movimento->save();
 	
 	$movimento->getSoma();
+	*/
 	exit;
 	

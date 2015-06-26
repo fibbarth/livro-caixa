@@ -17,12 +17,14 @@ class Movimento
 	public function __construct($db = false)
 	{
 		$this->db = $db;
+		$this->user_id = (int) base64_decode($_COOKIE[NAME_COOKIE]);
 	}
 	public function load()
 	{
-		$query = "SELECT * FROM {$this->table} WHERE id = :id";
+		$query = "SELECT * FROM {$this->table} WHERE id = :id AND user_id=:user_id";
 		$stmt = $this->db->prepare($query);
 		$stmt->bindParam(':id', $this->id, PDO::PARAM_INT); 
+		$stmt->bindParam(':user_id', $this->user_id, PDO::PARAM_INT); 
 		if( $stmt->execute() ){
 			$response = $stmt->fetchObject();
 			if( is_object($response) ){
@@ -64,7 +66,7 @@ class Movimento
 			$fields[] = "`{$v}`=:{$v}";
 		}
 		$fields = implode(', ', $fields);
-		$query = "UPDATE {$this->table} SET {$fields} WHERE id = :id";
+		$query = "UPDATE {$this->table} SET {$fields} WHERE id = :id AND user_id=:user_id";
 		$stmt = $this->db->prepare($query);
 		foreach( array_keys($attr) as $v )
 		{
@@ -92,9 +94,10 @@ class Movimento
 	
 	public function delete()
 	{
-		$query = "DELETE FROM {$this->table} WHERE id=:id";
+		$query = "DELETE FROM {$this->table} WHERE id=:id AND user_id=:user_id";
 		$stmt = $this->db->prepare($query);
 		$stmt->bindParam(':id', $this->id);
+		$stmt->bindParam(':user_id', $this->user_id);
 		return $stmt->execute();
 	}
 
@@ -116,9 +119,10 @@ class Movimento
 			. " AND YEAR(data_vencimento) = :ano"; 
 		}
 		$tipos = array( 'despesa' => 0, 'receita' => 1);
-		$query = "SELECT SUM(valor) as total FROM {$this->table} WHERE tipo = :tipo {$condicao}";
+		$query = "SELECT SUM(valor) as total FROM {$this->table} WHERE tipo = :tipo AND user_id=:user_id {$condicao}";
 		$stmt = $this->db->prepare($query);
 		$stmt->bindParam(':tipo', $tipos[$tipo]);
+		$stmt->bindParam(':user_id', $this->user_id);
 		
 		if( $condicao ){
 			list($ano, $mes) = explode('-', $anoMes);
@@ -136,13 +140,13 @@ class Movimento
 	{
 		$condicao = '';
 		if( $anoMes ){
-			$condicao = "WHERE MONTH(data_vencimento) = :mes"
+			$condicao = "AND MONTH(data_vencimento) = :mes"
 			. " AND YEAR(data_vencimento) = :ano";
 		}
 		
-		$query = "SELECT * FROM {$this->table} {$condicao}";
+		$query = "SELECT * FROM {$this->table} WHERE user_id=:user_id {$condicao}";
 		$stmt = $this->db->prepare($query);
-		
+		$stmt->bindParam(':user_id', $this->user_id);
 		if( $condicao ){
 			list($ano, $mes) = explode('-', $anoMes);
 			$stmt->bindParam(':ano', $ano);

@@ -1,20 +1,20 @@
 ﻿<?php
-session_start();
-
+ini_set('display_errors', 1);
 include 'config.php';
 include 'functions.php';
 require_once 'classes/Movimento.class.php';
 require_once 'classes/Categoria.class.php';
+require_once 'classes/Usuario.class.php';
+require_once 'classes/Sessao.class.php';
 
-if (isset($_GET['mes']))
-    $mes_hoje = $_GET['mes'];
-else
-    $mes_hoje = date('m');
+$usuario = new Usuario($db);
+$sessao = new Sessao($usuario);
 
-if (isset($_GET['ano']))
-    $ano_hoje = $_GET['ano'];
-else
-    $ano_hoje = date('Y');
+if( !$sessao->validaSessao() ){
+	header('Location: login.php');
+	exit;
+}
+$userLogado = $sessao->getUser();
 
 $dataParam = new DateTime(date('Y-m-d'));
 $dataAtual = new Datetime('now');
@@ -93,7 +93,7 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
                                         <img class="media-object" src="http://placehold.it/50x50" alt="">
                                     </span>
                                     <div class="media-body">
-                                        <h5 class="media-heading"><strong>John Smith</strong>
+                                        <h5 class="media-heading"><strong><?php echo $userLogado->nome; ?></strong>
                                         </h5>
 										
                                         <p class="small text-muted"><i class="fa fa-clock-o"></i> Yesterday at 4:32 PM</p>
@@ -165,7 +165,8 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
                     </ul>
                 </li>
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> John Smith <b class="caret"></b></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+					<i class="fa fa-user"></i> <?php echo $userLogado->nome; ?> <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="#"><i class="fa fa-fw fa-user"></i> Profile</a>

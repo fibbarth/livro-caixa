@@ -1,71 +1,74 @@
 <?php
-session_start();
-set_time_limit(0);
+ini_set('display_errors', 1);
+require_once 'config.php';
+require_once 'classes/Usuario.class.php';
+require_once 'classes/Sessao.class.php';
+$usuario = new Usuario($db);
+$sessao = new Sessao($usuario);
 
-$pagina_login = 1;
-
-include 'config.php';
-include 'functions.php';
-
-if (isset($_GET['sair'])) {
-    $_SESSION['logado'] = "";
-}
+if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
+	var_dump($sessao->autentica());
+	exit;
+} 
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-        <title id='titulo'>Livro caixa <?php echo $lc_titulo ?></title>
-        <meta name="LANGUAGE" content="Portuguese" />
-        <meta name="AUDIENCE" content="all" />
-        <meta name="RATING" content="GENERAL" />
-        <link href="styles.css" rel="stylesheet" type="text/css" />
-        <script language="javascript" src="scripts.js"></script>
-    </head>
-    <body style="padding:10px">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
+    <title><?php echo TITLE; ?></title>
 
-        <table cellpadding="1" cellspacing="10"  width="900" align="center" style="background-color:#033">
+    <!-- Bootstrap Core CSS -->
+    <link href="template/css/bootstrap.min.css" rel="stylesheet">
 
-            <tr>
-                <td colspan="11" style="background-color:#005B5B;">
-                    <h2 style="color:#FFF; margin:5px">Livro Caixa - <?php echo $lc_titulo ?></h2>
-                </td>
-                <td colspan="2" align="right" style="background-color:#005B5B;">
-                    <a style="color:#FFF" href="?mes=<?php echo date('m') ?>&ano=<?php echo date('Y') ?>">Hoje:<strong> <?php echo date('d') ?> de <?php echo mostraMes(date('m')) ?> de <?php echo date('Y') ?></strong></a>&nbsp; 
-                </td>
-            </tr>
-        </table>
-        <br />
-        <br />
-        <table cellpadding="1" cellspacing="10"  width="900" align="center" >
+    <!-- Custom CSS -->
+    <link href="template/css/sb-admin.css" rel="stylesheet">
 
-            <tr>
-                <td colspan="11" align="center" >
-                    Faça Login para entrar no sistema:
-                    <br><br>
-                            <form action="" method="post">
+    <!-- Morris Charts CSS -->
+    <link href="template/css/plugins/morris.css" rel="stylesheet">
 
-                                Login: <input type='text' name='login'><br>
-                                        Senha: <input type='password' name='senha'><br>
-                                                <br>
-                                                    <input type='submit' name='OK' value='Entrar'>
+    <!-- Custom Fonts -->
+    <link href="template/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	
+	<link href="css/login.css" rel="stylesheet" type="text/css">
 
-                                                        </form>
-                                                        <br>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.template/js/1.4.2/respond.min.js"></script>
+    <![endif]-->
 
-                                                            </td>
-                                                            </tr>
-                                                            </table>
+</head>
+<body>
+    <div class="container-fluid">    
+		<div class="row">
+			<form class="form-signin" action="login.php" method="post">
+				<h2 class="form-signin-heading">Login</h2>
+				<label for="inputEmail" class="sr-only">Email</label>
+				<input type="email" name="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+				<label for="inputPassword" class="sr-only">Password</label>
+				<input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+				<button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+			 </form>
+		</div>
+    </div>
+    <!-- /#wrapper -->
 
-                                                            <table cellpadding="5" cellspacing="0" width="900" align="center">
-                                                                <tr>
-                                                                    <td align="right">
-                                                                        <hr size="1" />
-                                                                        <em>Livro Caixa - <strong><?php echo $lc_titulo ?></strong> - Desenvolvido por <a href=http://www.paulocollares.com.br>Paulo Collares</a>. Versão 1.3 (11/06/13)</em>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                            </body>
-                                                            </html>
+    <!-- jQuery -->
+    <script src="template/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="template/js/bootstrap.min.js"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="template/js/plugins/morris/raphael.min.js"></script>
+    <script src="template/js/plugins/morris/morris.min.js"></script>
+    <script src="template/js/plugins/morris/morris-data.js"></script>
+</body>
+</html>
