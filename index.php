@@ -16,7 +16,7 @@ if( !$sessao->validaSessao() ){
 }
 $userLogado = $sessao->getUser();
 
-$dataParam = new DateTime(date('Y-m-d'));
+$dataParam = new DateTime('now');
 $dataAtual = new Datetime('now');
 
 if( isset($_GET['data']) ){
@@ -30,6 +30,7 @@ $totalDespesas = sprintf('%.2f',$movimentoObj->getTotal('despesa'));
 $totalReceitasMes = sprintf('%.2f', $movimentoObj->getTotal('receita', $dataParam->format('Y-m')));
 $totalDespesasMes = sprintf('%.2f', $movimentoObj->getTotal('despesa', $dataParam->format('Y-m')));
 $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
+$dataValue = mostraMes($dataParam->format('m')).' '.$dataParam->format('Y');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -52,9 +53,13 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
 
     <!-- Morris Charts CSS -->
     <link href="template/css/plugins/morris.css" rel="stylesheet">
+    
+	<link href="css/livro-caixa.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
     <link href="template/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	
+	<link href='http://code.jquery.com/ui/1.10.3/themes/start/jquery-ui.css' media='screen' rel='stylesheet' type='text/css'/>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -228,7 +233,6 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
         </nav>
 
         <div id="page-wrapper">
-
             <div class="container-fluid">
 
                 <!-- Page Heading -->
@@ -248,7 +252,7 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
                 </div>
                 <div class="row">
                     <div class="col-lg-6 col-md-6">
-                        <div class="panel panel-primary">
+                        <div class="panel <?php echo ($totalReceitasMes-$totalDespesasMes) >= 0 ? 'panel-green' : 'panel-red'; ?>">
                             <div class="panel-heading">
                                 <div class="row" style="padding:0px 10px 0px 10px;">
 									<h2 style="margin-top:0px;">
@@ -279,7 +283,7 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
                         </div>
                     </div>
                     <div class="col-lg-6 col-md-6">
-                        <div class="panel panel-green">
+                        <div class="panel <?php echo ($totalReceitas-$totalDespesas) >= 0 ? 'panel-green' : 'panel-red'; ?>">
                             <div class="panel-heading">
                                 <div class="row" style="padding:0px 10px 0px 10px;">
 									<h2 style="margin-top:0px;">
@@ -313,7 +317,8 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
                 <!-- /.row -->
                 <!-- /.row -->
                 <div class="row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-8">
+					<!--
 						<?php
 						for($x=1; $x<=12; $x++):
 						 $active = ($dataParam->format('m') == $x) ? 'btn-success' : 'btn-primary';
@@ -321,8 +326,16 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
                         <a href="?data=2015-<?php echo $x; ?>-01" class="btn btn-sm <?php echo $active; ?>" type="button"><?php echo mostraMes($x);?></a>
 						<?php 
 						endfor;
-						?>
+						?> -->
+						<div class="form-group input-group" style="position:relative">
+							<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+							<input name="myDate" class="form-control monthPicker" value="<?php echo $dataValue; ?>">
+						</div>
+						
                     </div>
+					<div class="col-lg-4 text-right">
+						<button class="btn btn-sm btn-primary" type="button">Adicionar lançamento</button>
+					</div>
                 </div>
                 <!-- /.row -->
 				<br>
@@ -335,7 +348,7 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
 								Movimentações no mês
 							</h3>
 						</div>
-						<?php if(is_array($movimentos)): ?>
+						<?php if($movimentos): ?>
                         <table class="table table-bordered table-hover table-striped">
 							<thead>
 								<tr>
@@ -412,11 +425,42 @@ $movimentos = $movimentoObj->getMovimentos($dataParam->format('Y-m'));
     <!-- Bootstrap Core JavaScript -->
     <script src="template/js/bootstrap.min.js"></script>
 
-    <!-- Morris Charts JavaScript -->
+    <!-- Morris Charts JavaScript
     <script src="template/js/plugins/morris/raphael.min.js"></script>
     <script src="template/js/plugins/morris/morris.min.js"></script>
     <script src="template/js/plugins/morris/morris-data.js"></script>
+	 -->
+	 <script src='http://code.jquery.com/ui/1.10.3/jquery-ui.min.js' type='text/javascript'></script>
 
+	<script>
+      	$('.monthPicker').datepicker({
+		  keyboardNavigation:'pt-BR',
+		  changeMonth: true,
+		  changeYear: true,
+		  showButtonPanel: true,
+		  dateFormat: 'MM yy',
+		  monthNames: ['Janeiro', 'Fevereiro', 'Mar&ccecdil;o', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+		  monthNamesShort: ['Jan', 'Fev', 'Marc', 'Abr', 'Mai', 'Jun',
+            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+		  onClose: function(dateText, inst) { 
+			if( (inst.currentMonth != inst.drawMonth) || (inst.currentYear != inst.drawYear ) ){
+				var day = 1;
+				var month = inst.drawMonth+1;
+				var year = inst.drawYear;
+				window.location = 'index.php?data='+day+'-'+month+'-'+year;
+			}
+		  }	
+		 }).focus(function() {
+		  var thisCalendar = $(this);
+		  $('.ui-datepicker-calendar').detach();
+		  $('.ui-datepicker-close').click(function() {
+		   var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+		   var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+		   thisCalendar.datepicker('setDate', new Date(year, month, 1));
+		  });
+		 });
+	</script>
 </body>
 
 </html>

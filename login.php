@@ -7,8 +7,11 @@ $usuario = new Usuario($db);
 $sessao = new Sessao($usuario);
 
 if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
-	var_dump($sessao->autentica());
-	exit;
+	if($sessao->autentica()){
+		header('Location: index.php');
+		exit;
+	}
+	
 } 
 ?>
 <!DOCTYPE html>

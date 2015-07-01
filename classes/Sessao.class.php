@@ -24,6 +24,7 @@ class Sessao
 			return false;
 		}
 		$this->setCookie();
+		return true;
 	}
 	
 	public function setCookie()
